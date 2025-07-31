@@ -1,40 +1,90 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Redirecionando...</title>
   <style>
     body {
+      background-color: #000000; /* Fundo preto */
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #ffffff;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: Arial, sans-serif;
-      text-align: center;
     }
-
-    .spinner {
-      margin-top: 20px;
-      width: 40px;
-      height: 40px;
-      border: 4px solid #ccc;
-      border-top: 4px solid #333;
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    h1 {
+      font-size: 18px;
+      color: #FFFFFF; /* Texto branco */
+      margin-bottom: 20px;
+    }
+    .loading {
+      animation: rotate 1s linear infinite;
+      border: 5px solid #4F4F4F; /* Cinza escuro */
+      border-top: 5px solid #00FF00; /* Parte superior em verde */
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      height: 50px;
+      width: 50px;
     }
-
-    @keyframes spin {
-      to {
+    @keyframes rotate {
+      0% {
+        transform: rotate(0);
+      }
+      100% {
         transform: rotate(360deg);
       }
     }
   </style>
+  <script>
+    // Função para fazer a requisição ao webhook do n8n
+    async function obterNumeros() {
+      try {
+        console.log('Iniciando requisição ao webhook...');
+        const response = await fetch('https://webhook-cfn2.wpp-app.org/webhook/presselpvcarolzinha', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Resposta recebida do webhook:', response);
+        if (!response.ok) {
+          throw new Error('Erro na requisição ao webhook');
+        }
+        const data = await response.json();
+        console.log('Dados recebidos do webhook:', data);
+        return data.numbers;
+      } catch (error) {
+        console.error('Erro ao obter os números do webhook:', error);
+        throw error;
+      }
+    }
 
+    // Função para redirecionar para um grupo de WhatsApp aleatório
+    async function redirecionar() {
+      try {
+        const numeros = await obterNumeros();
+        const numeroAleatorio = numeros[Math.floor(Math.random() * numeros.length)];
+        const url = `https://api.whatsapp.com/send?phone=${numeroAleatorio}&text=Oi,%20quero%20conversar%20com%20voce!`;
+        console.log('Redirecionando para:', url);
+        window.location.href = url;
+      } catch (error) {
+        console.error('Erro ao obter os números ou redirecionar:', error);
+        // URL de fallback em caso de erro
+        window.location.href = 'https://api.whatsapp.com/send?phone=5542991378526&text=Oi,%20tudo%20bem%20gata%20?';
+      }
+    }
+
+   </script>
   <!-- Pixel do Facebook -->
   <script>
     !function(f,b,e,v,n,t,s)
@@ -45,27 +95,15 @@
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    
     fbq('init', '731448199026811');
-    fbq('track', 'Purchase', {
-      value: 10.00,
-      currency: 'BRL'
-    });
+    fbq('track', 'Pageview');
   </script>
-  <noscript>
-    <img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=731448199026811&ev=Purchase&cd[value]=10.00&cd[currency]=BRL&noscript=1"/>
-  </noscript>
 
-  <!-- Redirecionamento após 3 segundos -->
-  <script>
-    setTimeout(function () {
-      window.location.href = "https://drive.google.com/file/d/1mqrbn6EgV132ISe61DV7B4AeOyXSnG2P/view?usp=sharing";
-    }, 3000);
-  </script>
 </head>
-<body>
-  <h1>Aguarde alguns segundos...</h1>
-  <div class="spinner"></div>
+<body onload="redirecionar(); enviarPixel();">
+  <div class="loading-container">
+    <h1>Aguarde um momento por favor...</h1>
+    <div class="loading"></div>
+  </div>
 </body>
 </html>
